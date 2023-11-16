@@ -30,13 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Redirige según el rol
                 switch ($usuario['rol']) {
                     case 'Administrador':
-                        header('Location: administrador/inicioAdministrador.php');
+                        header('Location: index.php');
                         exit();
                     case 'Ingeniero civil':
-                        header('Location: ingeniero-civil/inicioIngeniero.php');
+                        header('Location: index.php');
                         exit();
                     case 'Supervisor':
-                        header('Location: supervisor/inicioSupervisor.php');
+                        header('Location: index.php');
                         exit();
                     // Agrega más roles según sea necesario
                     default:
@@ -77,8 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <h1>Login</h1>
-    <span>or <a href="singup.php">SingUp</a></span>
-
     <form id="login" action="login.php" method="POST">
         <label for="email" id="id_email">Documento</label>
         <input type="number" name="documento" placeholder="Introduce tu documento">
