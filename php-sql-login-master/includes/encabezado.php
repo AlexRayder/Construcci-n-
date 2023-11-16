@@ -66,7 +66,7 @@ if (isset($_SESSION['id_usuario'])) {
                                 <a class="nav-link" href="moduloBodega.php">Módulo Bodega</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Módulo De Apartamento</a>
+                                <a class="nav-link" href="apartamentos.php">Módulo De Apartamento</a>
                             </li>
                             <?php
                         }
@@ -74,7 +74,7 @@ if (isset($_SESSION['id_usuario'])) {
                         if ($rol === 'Supervisor' || $rol === 'Administrador') {
                             ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Módulo de Contabilidad</a>
+                                <a class="nav-link" href="registroContabilidad.php">Módulo de Contabilidad</a>
                             </li>
                             <?php
                         }
