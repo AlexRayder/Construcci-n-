@@ -2,6 +2,7 @@
 require_once 'includes/conexion.php';
 require_once 'includes/encabezado.php';
 
+
 // Inicializar variables
 $materiales = [];
 $registrosContabilidad = [];
@@ -63,7 +64,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     }
+    $sqlMaterialSeleccionado = "SELECT * FROM materiales WHERE id_material = ?";
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Manejo del formulario de actualización de estado
+        if (isset($_POST['actualizar_estado'])) {
+            $id_material_actualizar = $_POST['id_material'];
+            $nuevo_estado = $_POST['nuevo_estado'];
+            $nuevo_nombre = isset($_POST['nuevo_nombre']) ? $_POST['nuevo_nombre'] : null;
+    
+            // Actualizar el estado del material
+            $sql_actualizar_estado = "UPDATE materiales SET estado = ? WHERE id_material = ?";
+            $stmt_actualizar_estado = $db->prepare($sql_actualizar_estado);
+            $stmt_actualizar_estado->bind_param("si", $nuevo_estado, $id_material_actualizar);
+    
+            if ($stmt_actualizar_estado->execute()) {
+                echo "Estado actualizado con éxito.<br>";
+    
+                // Actualizar nombre si se proporciona
+                if (!is_null($nuevo_nombre)) {
+                    // Obtener datos actuales del material
+                    $stmt_material_seleccionado = $db->prepare($sqlMaterialSeleccionado);
+                    $stmt_material_seleccionado->bind_param("i", $id_material_actualizar);
+                    $stmt_material_seleccionado->execute();
+                    $result_material_seleccionado = $stmt_material_seleccionado->get_result();
+                    $datos_material = $result_material_seleccionado->fetch_assoc();
+    
+                    // Actualizar nombre si se proporciona
+                    $nuevo_nombre = !empty($nuevo_nombre) ? $nuevo_nombre : $datos_material['nombre_material'];
+    
+                    // Actualizar nombre y estado
+                    $sql_actualizar_datos = "UPDATE materiales SET nombre_material = ?, estado = ? WHERE id_material = ?";
+                    $stmt_actualizar_datos = $db->prepare($sql_actualizar_datos);
+                    $stmt_actualizar_datos->bind_param("ssi", $nuevo_nombre, $nuevo_estado, $id_material_actualizar);
+    
+                    if ($stmt_actualizar_datos->execute()) {
+                        echo "Datos actualizados con éxito.";
+                    } else {
+                        echo "Error al actualizar los datos: " . $stmt_actualizar_datos->error . "<br>";
+                    }
+                }
+            } else {
+                echo "Error al actualizar el estado: " . $stmt_actualizar_estado->error . "<br>";
+            }
+        }
+    }
+
+
 }
+
 
 // Consulta para obtener datos de la tabla 'materiales'
 $sqlConsulta = "SELECT * FROM materiales";
@@ -87,6 +136,23 @@ while ($row = mysqli_fetch_assoc($resultConsulta2)) {
 
 // Cerrar la conexión
 $db->close();
+
+
+?><?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+
+$rol = 'id_usuario'; 
+
+// Verificar el rol del usuario
+if ($rol === 'Administrador') {
+    $_SESSION['mostrar_formulario'] = true;
+} else {
+    $_SESSION['mostrar_formulario'] = false;
+}
+}
+
+
 ?>
 
 <!-- Formulario HTML -->
@@ -120,31 +186,44 @@ $db->close();
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
 
 
-<!-- Formulario HTML de actualización de estado -->
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-    <label for="id_material">Seleccione un material:</label>
-    <select name="id_material">
-        <?php
-        foreach ($materiales as $row_material) {
-            echo "<option value='{$row_material["id_material"]}'>{$row_material["nombre_material"]}</option>";
-        }
-        ?>
-    </select><br>
+<?php
+if ($rol === 'Administrador') {
+    ?>
+    <h1>Actualizar nombre y estado</h1>
+    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+        <label for="id_material">Seleccione un material inactivo:</label>
+        <select name="id_material">
+            <?php
+            foreach ($materiales as $row_material) {
+                // Mostrar solo los materiales inactivos
+                if ($row_material["estado"] === 'Inactivo') {
+                    echo "<option value='{$row_material["id_material"]}'>{$row_material["nombre_material"]}</option>";
+                }
+            }
+            ?>
+        </select><br>
 
-    <label for="nuevo_estado">Nuevo Estado:</label>
-    <select name="nuevo_estado">
-        <option value="Activo">Activo</option>
-        <option value="Inactivo">Inactivo</option>
-    </select><br>
+        <label for="nuevo_estado">Nuevo Estado:</label>
+        <select name="nuevo_estado">
+            <option value="Activo">Activo</option>
+        </select><br>
 
-    <input type="submit" name="actualizar_estado" value="Actualizar Estado">
-</form>
+        <!-- Agregar campos para actualizar nombre -->
+        <label for="nuevo_nombre">Nuevo Nombre:</label>
+        <input type="text" name="nuevo_nombre"><br>
+
+        <input type="submit" name="actualizar_estado" value="Actualizar Estado">
+    </form>
+    <?php
+} 
+?>
+
 
 
 <!-- Agrega un contenedor para la tabla -->
 <div class="container">
     <table id="tablaInventario">
-    <thead>
+        <thead>
             <tr>
                 <th>ID</th>
                 <th>Nombre del Material</th>
@@ -153,39 +232,41 @@ $db->close();
                 <th>Fecha de Registro</th>
                 <th>Costo Unitario</th>
                 <th>Costo Total</th>
-
+                <th>Accion</th>
             </tr>
         </thead>
         <tbody>
             <?php
-            // Utiliza los arrays almacenados para mostrar la tabla
             $totalFilas = max(count($materiales), count($registrosContabilidad));
 
             for ($i = 0; $i < $totalFilas; $i++) {
-                echo "<tr>";
+                echo "<tr id='fila" . (!empty($materiales[$i]) ? $materiales[$i]['id_material'] : '') . "' class='" . (!empty($materiales[$i]) && $materiales[$i]['estado'] == 'Inactivo' ? 'inactivo' : '') . "'>";
 
-                // Mostramos los datos de materiales
                 if (!empty($materiales[$i])) {
                     echo "<td>{$materiales[$i]['id_material']}</td>";
                     echo "<td>{$materiales[$i]['nombre_material']}</td>";
                     echo "<td>{$materiales[$i]['estado']}</td>";
                 } else {
-                    // Si no hay datos de materiales para esta fila, agregar celdas vacías
                     echo "<td></td><td></td><td></td>";
                 }
 
-                // Mostramos los datos de registros_contabilidad
                 if (!empty($registrosContabilidad[$i])) {
                     echo "<td>{$registrosContabilidad[$i]['cantidad_utilizada']}</td>";
                     echo "<td>{$registrosContabilidad[$i]['fecha_registro']}</td>";
                     echo "<td>{$registrosContabilidad[$i]['costo_unitario']}</td>";
                     echo "<td>{$registrosContabilidad[$i]['costo_total']}</td>";
                 } else {
-                    // Si no hay datos de registros_contabilidad para esta fila, agregar celdas vacías
                     echo "<td></td><td></td><td></td><td></td>";
                 }
 
-                // Agregar más columnas según sea necesario
+                echo "<td style='text-align:center;'>";
+
+                if (!empty($materiales[$i]) && $materiales[$i]['estado'] == 'Activo') {
+                    echo "<input type='submit' name='Submit' value='Eliminar' onclick=\"eliminarContabilidad(" . $materiales[$i]['id_material'] . ")\">";
+                }
+
+                echo "</td>";
+
                 echo "</tr>";
             }
             ?>
@@ -193,12 +274,23 @@ $db->close();
     </table>
 </div>
 
+<style>
+    .inactivo {
+        display: none;
+    }
+</style>
+
 <script>
     // Inicializar DataTable
     $(document).ready(function () {
         $('#tablaInventario').DataTable();
     });
 </script>
+<script src="js/eliminar.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <?php require_once 'includes/inicio.php' ?>
 <?php require_once 'includes/footer.php' ?>

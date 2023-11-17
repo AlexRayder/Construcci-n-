@@ -89,7 +89,8 @@ if (isset($_SESSION['id_usuario'])) {
                 <div class="lg-exito">Bienvenido
                     <?php if (isset($_SESSION['nombre'])): ?>
                         <span id="lg-correo">
-                            <?= $_SESSION['nombre'] . ' ' . $_SESSION['apellido'] . ' ' . $_SESSION['rol']?>
+                        <?= $_SESSION['nombre'] . ' ' . $_SESSION['apellido'] . ' <span style="font-weight: bold; text-decoration: underline;">' . $_SESSION['rol'] . '</span>' ?>
+
                         </span>
                     <?php else: ?>
                         <span id="lg-correo">Usuario</span>

@@ -81,6 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $idInventario = mysqli_insert_id($db);
 
             echo "Registro en 'inventario' insertado con éxito. ID del material: $idInventario<br>";
+          
+
         }
 
         // Insertar el registro en la tabla 'movimientos'
@@ -136,7 +138,7 @@ mysqli_close($db);
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tabla de Inventario</title>
+<title>Bodega</title>
 
 <!-- Agregar enlaces a las bibliotecas de DataTables y jQuery -->
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
@@ -187,12 +189,12 @@ mysqli_close($db);
 
     <div id="fecha_ingreso_div">
         <label for="fecha_ingreso">Fecha de Ingreso:</label>
-        <input type="date" name="fecha_ingreso" id="fecha_ingreso" ><br>
+        <input type="date" name="fecha_ingreso" id="fecha_ingreso"><br>
     </div>
 
     <div id="fecha_movimiento_div" style="display:none;">
         <label for="fecha_movimiento">Fecha de Movimiento:</label>
-        <input type="date" name="fecha_movimiento" id="fecha_movimiento" ><br>
+        <input type="date" name="fecha_movimiento" id="fecha_movimiento"><br>
     </div>
 
     <label for="lugar_almacenamiento">Lugar de Almacenamiento:</label>
@@ -201,6 +203,8 @@ mysqli_close($db);
     <input type="submit" value="Registrar">
 </form>
 
+
+<div class="container">
 <h2>Tabla de Inventario</h2>
 
 <!-- Agregar un contenedor para la tabla -->
@@ -212,7 +216,7 @@ mysqli_close($db);
             <th>Cantidad</th>
             <th>Fecha de Ingreso</th>
             <th>Lugar de Almacenamiento</th>
-            <!-- Agregar más columnas según sea necesario -->
+            <th style='text-align:center;'>Acción</th>
         </tr>
     </thead>
     <tbody>
@@ -225,13 +229,20 @@ mysqli_close($db);
             echo "<td>{$row['cantidad']}</td>";
             echo "<td>{$row['fecha_ingreso']}</td>";
             echo "<td>{$row['lugar_almacenamiento']}</td>";
-            // Agregar más columnas según sea necesario
+            echo "<td style='text-align:center;'> 
+            <a href='editarBodega.php?id=".$row['id']."'><input type='submit' name='Submit' value='Editar'></a>
+            <input type='submit' name='Submit' value='Eliminar' onclick=\"eliminarBodega(".$row['id'].")\">
+          </td>";
+    
             echo "</tr>";
         }
         ?>
     </tbody>
 </table>
-
+</div>
+<script src="js/eliminar.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <?php
 require_once 'includes/inicio.php';
 ?>
