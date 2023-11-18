@@ -18,7 +18,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $sql_actualizar_estado = "UPDATE materiales SET estado = '$nuevo_estado' WHERE id_material = $id_material_actualizar";
 
         if ($db->query($sql_actualizar_estado) === TRUE) {
-            echo "Estado actualizado con éxito.<br>";
+            echo "<script language='JavaScript'>
+            Swal.fire({
+                title: '¡Registro Actualizado!',
+                text: '¡Actualizaste Correctamente!',
+                icon: 'success'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  window.location.href = 'registroContabilidad.php';
+                }
+              });
+            </script>";
         } else {
             echo "Error al actualizar el estado: " . $db->error . "<br>";
         }
@@ -33,13 +43,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Insertar datos en la tabla 'materiales'
         if ($result_check_material->num_rows > 0) {
-            echo "Material ya existe.<br>";
+            echo "<script language='JavaScript'>
+                    Swal.fire({
+                        title: '¡Error!',
+                        text: '¡Este Material Ya Existe!',
+                        icon: 'error'
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          window.location.href = 'registroContabilidad.php';
+                        }
+                      });
+                    </script>";
         } else {
             $sql_material = "INSERT INTO materiales (nombre_material, estado) 
                              VALUES ('$nombre_material', '$estado')";
 
             if ($db->query($sql_material) === TRUE) {
-                echo "Material agregado con éxito.<br>";
+                echo "<script language='JavaScript'>
+                    Swal.fire({
+                        title: '¡Registro Exitoso!',
+                        text: '¡Agregaste Correctamente este Material!',
+                        icon: 'success'
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          window.location.href = 'restroContabilidad.php';
+                        }
+                      });
+                    </script>";
 
                 // Recuperar el ID del material recién insertado
                 $id_material = $db->insert_id;
@@ -55,7 +85,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                VALUES ('$id_material', '$cantidad_utilizada', '$fecha_registro', '$costo_unitario', '$costo_total')";
 
                 if ($db->query($sql_compra) === TRUE) {
-                    echo "Compra registrada con éxito.";
+                    echo "<script language='JavaScript'>
+                    Swal.fire({
+                        title: '¡Compra Registrada!',
+                        text: '¡Exitosamente Agregaste esta Compra!',
+                        icon: 'success'
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          window.location.href = 'registroContabilidad.php';
+                        }
+                      });
+                    </script>";
                 } else {
                     echo "Error al registrar la compra: " . $db->error . "<br>";
                 }
@@ -72,15 +112,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_material_actualizar = $_POST['id_material'];
             $nuevo_estado = $_POST['nuevo_estado'];
             $nuevo_nombre = isset($_POST['nuevo_nombre']) ? $_POST['nuevo_nombre'] : null;
-    
+
             // Actualizar el estado del material
             $sql_actualizar_estado = "UPDATE materiales SET estado = ? WHERE id_material = ?";
             $stmt_actualizar_estado = $db->prepare($sql_actualizar_estado);
             $stmt_actualizar_estado->bind_param("si", $nuevo_estado, $id_material_actualizar);
-    
+
             if ($stmt_actualizar_estado->execute()) {
                 echo "Estado actualizado con éxito.<br>";
-    
+
                 // Actualizar nombre si se proporciona
                 if (!is_null($nuevo_nombre)) {
                     // Obtener datos actuales del material
@@ -89,17 +129,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt_material_seleccionado->execute();
                     $result_material_seleccionado = $stmt_material_seleccionado->get_result();
                     $datos_material = $result_material_seleccionado->fetch_assoc();
-    
+
                     // Actualizar nombre si se proporciona
                     $nuevo_nombre = !empty($nuevo_nombre) ? $nuevo_nombre : $datos_material['nombre_material'];
-    
+
                     // Actualizar nombre y estado
                     $sql_actualizar_datos = "UPDATE materiales SET nombre_material = ?, estado = ? WHERE id_material = ?";
                     $stmt_actualizar_datos = $db->prepare($sql_actualizar_datos);
                     $stmt_actualizar_datos->bind_param("ssi", $nuevo_nombre, $nuevo_estado, $id_material_actualizar);
-    
+
                     if ($stmt_actualizar_datos->execute()) {
-                        echo "Datos actualizados con éxito.";
+                        echo "<script language='JavaScript'>
+                        Swal.fire({
+                            title: '¡Datos Actualizados!',
+                            text: '¡Actualizaste Correctamente!',
+                            icon: 'success'
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              window.location.href = 'registroContabilidad.php';
+                            }
+                          });
+                        </script>";
                     } else {
                         echo "Error al actualizar los datos: " . $stmt_actualizar_datos->error . "<br>";
                     }
@@ -138,45 +188,61 @@ while ($row = mysqli_fetch_assoc($resultConsulta2)) {
 $db->close();
 
 
-?><?php
+?>
+<?php
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 
-$rol = 'id_usuario'; 
+    $rol = 'id_usuario';
 
-// Verificar el rol del usuario
-if ($rol === 'Administrador') {
-    $_SESSION['mostrar_formulario'] = true;
-} else {
-    $_SESSION['mostrar_formulario'] = false;
-}
+    // Verificar el rol del usuario
+    if ($rol === 'Administrador') {
+        $_SESSION['mostrar_formulario'] = true;
+    } else {
+        $_SESSION['mostrar_formulario'] = false;
+    }
 }
 
 
 ?>
 
-<!-- Formulario HTML -->
-<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-    <label for="nombre_material">Nombre del Material:</label>
-    <input type="text" name="nombre_material" required><br>
+<div class="container mt-5">
+    <h1>Registro Compra</h1>
+    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
 
-    <label for="estado">Estado:</label>
-    <select name="estado">
-        <option value="Activo">Activo</option>
-        <option value="Inactivo">Inactivo</option>
-    </select><br>
+        <div class="form-floating mb-3">
+            <input type="text" name="nombre_material" class="form-control" required placeholder="name@example.com">
+            <label for="nombre_material">Nombre del Material:</label>
+        </div>
 
-    <label for="cantidad_utilizada">Cantidad :</label>
-    <input type="text" name="cantidad_utilizada" required><br>
+        <div class="form-floating mb-3">
+            <select name="estado" class="form-select" required placeholder="name@example.com">
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+            </select>
+            <label for="estado">Estado:</label>
+        </div>
 
-    <label for="fecha_registro">Fecha de Registro:</label>
-    <input type="date" name="fecha_registro" required><br>
+        <div class="form-floating mb-3">
+            <input type="text" name="cantidad_utilizada" class="form-control" required placeholder="name@example.com">
+            <label for="cantidad_utilizada">Cantidad :</label>
+        </div>
 
-    <label for="costo_unitario">Costo Unitario:</label>
-    <input type="text" name="costo_unitario" required><br>
+        <div class="form-floating mb-3">
 
-    <input type="submit" value="Registrar Compra">
-</form>
+            <input type="date" name="fecha_registro" class="form-control" required placeholder="name@example.com">
+            <label for="fecha_registro">Fecha de Registro:</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="text" name="costo_unitario" class="form-control" required placeholder="name@example.com">
+            <label for="costo_unitario">Costo Unitario:</label>
+        </div>
+        <div>
+            <input type="submit" class="btn btn-success" value="Registrar Compra">
+        </div>
+    </form>
+</div>
 <hr>
 
 
@@ -189,33 +255,42 @@ if ($rol === 'Administrador') {
 <?php
 if ($rol === 'Administrador') {
     ?>
-    <h1>Actualizar nombre y estado</h1>
-    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-        <label for="id_material">Seleccione un material inactivo:</label>
-        <select name="id_material">
-            <?php
-            foreach ($materiales as $row_material) {
-                // Mostrar solo los materiales inactivos
-                if ($row_material["estado"] === 'Inactivo') {
-                    echo "<option value='{$row_material["id_material"]}'>{$row_material["nombre_material"]}</option>";
-                }
-            }
-            ?>
-        </select><br>
+    <div class="container mt-5">
+        <h1>Actualizar nombre y estado</h1>
+        <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+            <div class="form-floating mb-3">
 
-        <label for="nuevo_estado">Nuevo Estado:</label>
-        <select name="nuevo_estado">
-            <option value="Activo">Activo</option>
-        </select><br>
+                <select name="id_material" class="form-select" required placeholder="name@example.com">
+                    <?php
+                    foreach ($materiales as $row_material) {
+                        // Mostrar solo los materiales inactivos
+                        if ($row_material["estado"] === 'Inactivo') {
+                            echo "<option value='{$row_material["id_material"]}'>{$row_material["nombre_material"]}</option>";
+                        }
+                    }
+                    ?>
+                </select>
+                <label for="id_material">Seleccione un material inactivo:</label>
+            </div>
+            <div class="form-floating mb-3">
 
-        <!-- Agregar campos para actualizar nombre -->
-        <label for="nuevo_nombre">Nuevo Nombre:</label>
-        <input type="text" name="nuevo_nombre"><br>
+                <select name="nuevo_estado" class="form-select" required placeholder="name@example.com">
+                    <option value="Activo">Activo</option>
+                </select>
+                <label for="nuevo_estado">Nuevo Estado:</label>
+            </div>
 
-        <input type="submit" name="actualizar_estado" value="Actualizar Estado">
-    </form>
+            <div class="form-floating mb-3">
+                <input type="text" name="nuevo_nombre" class="form-control" placeholder="name@example.com">
+                <label for="nuevo_nombre">Nuevo Nombre:</label>
+            </div>
+            <div>
+                <input type="submit" class="btn btn-success" name="actualizar_estado" value="Actualizar Estado">
+            </div>
+        </form>
+    </div>
     <?php
-} 
+}
 ?>
 
 
@@ -262,7 +337,7 @@ if ($rol === 'Administrador') {
                 echo "<td style='text-align:center;'>";
 
                 if (!empty($materiales[$i]) && $materiales[$i]['estado'] == 'Activo') {
-                    echo "<input type='submit' name='Submit' value='Eliminar' onclick=\"eliminarContabilidad(" . $materiales[$i]['id_material'] . ")\">";
+                    echo "<input type='submit' name='Submit' value='Eliminar' class='btn btn-danger' onclick=\"eliminarContabilidad(" . $materiales[$i]['id_material'] . ")\">";
                 }
 
                 echo "</td>";

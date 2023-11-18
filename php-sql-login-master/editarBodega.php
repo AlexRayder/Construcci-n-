@@ -72,15 +72,15 @@ require_once 'includes/conexion.php';
                     value="<?php echo $nombre; ?>">
                 <label for="floatingInput">Nombre Material</label>
             </div>
-            <div class="form-floating">
+            <div class="form-floating mb-3">
                 <input type="text" class="form-control" name="lugar_almacenamiento" id="floatinglugar"
                     placeholder="lugar" value="<?php echo $lugar; ?>">
                 <label for="floatinglugar">Lugar Almacenamiento</label>
             </div>
             <input type="hidden" name="id" value="<?php echo $id; ?>">
-            <div>
-                <input type="submit" name="enviar" value="Actualizar">
-                <a href="moduloBodega.php">Regresar</a>
+            <div class="col-md-6 mb-3"> 
+                <input type="submit" class="btn btn-success" name="enviar" value="Actualizar">
+                <a href="moduloBodega.php" class="btn btn-danger" >Regresar</a>
             </div>
         </form>
     </div>

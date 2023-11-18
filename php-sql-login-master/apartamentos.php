@@ -18,9 +18,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             VALUES ('$direccion', '$nombre', '$fecha_inicio', '$fecha_fin', '$estado')";
 
         if ($db->query($sql_apartamento) === TRUE) {
-            echo "Registro de apartamento exitoso";
-            header("Location: apartamentos.php");
-            exit();
+            echo "<script language='JavaScript'>
+                    Swal.fire({
+                        title: '¡Registro Exitoso!',
+                        text: '¡Agregaste Correctamente este Apartamento!',
+                        icon: 'success'
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          window.location.href = 'apartamentos.php';
+                        }
+                      });
+                    </script>";
         } else {
             echo "Error: " . $sql_apartamento . "<br>" . $db->error;
         }
@@ -48,9 +56,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                               VALUES ('$id_apartamento', '$fecha_novedad', '$novedad', '$usuario_realizo')";
 
             if ($db->query($sql_historial) === TRUE) {
-                echo "Registro de novedad exitoso";
-                header("Location: apartamentos.php");
-             
+                echo "<script language='JavaScript'>
+                Swal.fire({
+                    title: '¡Registro Exitoso!',
+                    text: '¡Agregaste esta Novedad Correctamente!',
+                    icon: 'success'
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      window.location.href = 'apartamentos.php';
+                    }
+                  });
+                </script>";
+
             } else {
                 echo "Error: " . $sql_historial . "<br>" . $db->error;
             }
@@ -61,92 +78,130 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
+<div class="container mt-5">
+    <h2>Registro de Apartamento</h2>
+    <form action="" method="post">
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" name="nombre" required placeholder="Nombre Encargado">
+            <label for="nombre">Nombre Encargado:</label>
 
-<h2>Registro de Apartamento</h2>
-<form action="" method="post">
-    <label for="nombre">Nombre:</label>
-    <input type="text" name="nombre" required>
+        </div>
 
-    <label for="direccion">Dirección:</label>
-    <input type="text" name="direccion" required>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" name="direccion" required placeholder="calle24">
+            <label for="direccion">Dirección:</label>
 
-    <label for="fecha_inicio">Fecha de Inicio de Construcción:</label>
-    <input type="date" name="fecha_inicio" required>
+        </div>
 
-    <label for="fecha_fin">Fecha de Fin de Construcción:</label>
-    <input type="date" name="fecha_fin" required>
+        <div class="form-floating mb-3">
+            <input type="date" class="form-control" name="fecha_inicio" required placeholder="01/01/2023">
+            <label for="fecha_inicio">Fecha de Inicio de Construcción:</label>
 
-    <label for="estado">Estado:</label>
-    <select name="estado" required>
-        <option value="Desarrollo">En Desarrollo</option>
-        <option value="En Construccion">En Construcción</option>
-        <option value="Finalizado">Finalizado</option>
-    </select>
+        </div>
 
-    <input type="submit" name="registrar_apartamento" value="Registrar Apartamento">
-</form>
+        <div class="form-floating mb-3">
+            <input type="date" class="form-control" name="fecha_fin" required placeholder="01/01/2029">
+            <label for="fecha_fin">Fecha de Fin de Construcción:</label>
 
-<h2>Registro de Novedad en Historial</h2>
-<form action="" method="post">
-    <label for="direccion_apartamento">Dirección del Apartamento:</label>
-    <select name="direccion_apartamento" required>
-        <?php
-        while ($row = $result_apartamentos->fetch_assoc()) {
-            echo "<option value='{$row['direccion']}'>{$row['direccion']}</option>";
-        }
-        ?>
-    </select>
+        </div>
 
-    <label for="novedad">Novedad:</label>
-    <textarea name="novedad" rows="4" cols="50"></textarea>
+        <div class="form-floating mb-3">
+            <select class="form-select" name="estado" required placeholder="inicio,fin,planacion">
+                <option value="Desarrollo">En Desarrollo</option>
+                <option value="En Construccion">En Construcción</option>
+                <option value="Finalizado">Finalizado</option>
+            </select>
+            <label for="estado">Estado:</label>
+        </div>
 
-    <label for="nombre_usuario">Nombre del Usuario:</label>
-    <input type="text" name="nombre_usuario" required>
+        <div class="form-group">
+            <input type="submit" class="btn btn-success" name="registrar_apartamento" value="Registrar Apartamento">
+        </div>
+    </form>
+</div>
+<hr>
+<div class="container mt-5">
+    <h2>Registro de Novedad en Historial</h2>
+    <form action="" method="post">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="form-floating">
+                    <select class="form-select" name="direccion_apartamento" id="direccion_apartamento" required>
+                        <?php
+                        while ($row = $result_apartamentos->fetch_assoc()) {
+                            echo "<option value='{$row['direccion']}'>{$row['direccion']}</option>";
+                        }
+                        ?>
+                    </select>
+                    <label for="direccion_apartamento">Dirección del Apartamento:</label>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="form-floating">
+                    <textarea class="form-control" name="novedad" id="novedad" rows="4" required placeholder="01/01/2029"></textarea>
+                    <label for="novedad">Novedad:</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="nombre_usuario" id="nombre_usuario" required placeholder="01/01/2029">
+                    <label for="nombre_usuario">Nombre del Usuario:</label>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="cedula_usuario" id="cedula_usuario" required placeholder="01/01/2029">
+                    <label for="cedula_usuario">Número de Cédula del Usuario:</label>
+                </div>
+            </div>
+        </div>
 
-    <label for="cedula_usuario">Número de Cédula del Usuario:</label>
-    <input type="text" name="cedula_usuario" required>
-
-    <input type="submit" name="registrar_novedad" value="Registrar Novedad">
-</form>
+        <div class="mb-3">
+            <input type="submit" class="btn btn-success" name="registrar_novedad" value="Registrar Novedad">
+        </div>
+    </form>
+</div>
 
 
 
 <!-- Agrega una tabla con un identificador único -->
 <div class="container">
-    
-<h2>Lista de Apartamentos</h2>
+
+    <h2>Lista de Apartamentos</h2>
     <table id="tablaApartamentos">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Dirección</th>
-            <th>Persona Encargada</th>
-            <th>Fecha de Inicio</th>
-            <th>Fecha de Fin</th>
-            <th>Estado</th>
-            <th>Accion</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        $result_apartamentos->data_seek(0); // Reiniciar el puntero del resultado
-        while ($row = $result_apartamentos->fetch_assoc()) {
-            echo "<tr>";
-            echo "<td>{$row['id_apartamento']}</td>";
-            echo "<td>{$row['direccion']}</td>";
-            echo "<td>{$row['persona_encargada']}</td>";
-            echo "<td>" . date("Y-m-d", strtotime($row['fecha_inicio_contruccion'])) . "</td>";
-            echo "<td>" . date("Y-m-d", strtotime($row['fecha_fin_construccion'])) . "</td>";
-            echo "<td>{$row['estado']}</td>";
-            echo "<td style='text-align:center;'> 
-            <a href='editarApartamento.php?id=" . $row['id_apartamento'] . "'><input type='submit' name='Submit' value='Editar'></a>
-            <input type='submit' name='Submit' value='Eliminar' onclick=\"eliminarApartamento(" . $row['id_apartamento'] . ")\">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Dirección</th>
+                <th>Persona Encargada</th>
+                <th>Fecha de Inicio</th>
+                <th>Fecha de Fin</th>
+                <th>Estado</th>
+                <th>Accion</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $result_apartamentos->data_seek(0); // Reiniciar el puntero del resultado
+            while ($row = $result_apartamentos->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>{$row['id_apartamento']}</td>";
+                echo "<td>{$row['direccion']}</td>";
+                echo "<td>{$row['persona_encargada']}</td>";
+                echo "<td>" . date("Y-m-d", strtotime($row['fecha_inicio_contruccion'])) . "</td>";
+                echo "<td>" . date("Y-m-d", strtotime($row['fecha_fin_construccion'])) . "</td>";
+                echo "<td>{$row['estado']}</td>";
+                echo "<td style='text-align:center;'> 
+            <a href='editarApartamento.php?id=" . $row['id_apartamento'] . "'><input type='submit' name='Submit'  class='btn btn-warning' value='Editar'></a>
+            <input type='submit' name='Submit' class='btn btn-danger' value='Eliminar' onclick=\"eliminarApartamento(" . $row['id_apartamento'] . ")\">
           </td>";
-            echo "</tr>";
-        }
-        ?>
-    </tbody>
-</table>
+                echo "</tr>";
+            }
+            ?>
+        </tbody>
+    </table>
 </div>
 
 <!-- Agrega el archivo JavaScript de DataTables y su dependencia jQuery -->

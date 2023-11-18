@@ -80,8 +80,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Obtener el ID del material recién insertado
             $idInventario = mysqli_insert_id($db);
 
-            echo "Registro en 'inventario' insertado con éxito. ID del material: $idInventario<br>";
-          
+            echo "<script language='JavaScript'>
+                    Swal.fire({
+                        title: '¡Registro Material!',
+                        text: '¡Registrado Correctamente!',
+                        icon: 'success'
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          window.location.href = 'moduloBodega.php';
+                        }
+                      });
+                    </script>";
+
 
         }
 
@@ -141,6 +151,7 @@ mysqli_close($db);
 <title>Bodega</title>
 
 <!-- Agregar enlaces a las bibliotecas de DataTables y jQuery -->
+<link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
 <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
@@ -169,80 +180,102 @@ mysqli_close($db);
     // Llamar a la función al cargar la página y cuando cambie el tipo de movimiento
     window.onload = mostrarOcultarFechaIngreso;
 </script>
+<div class="container-fluid" >
+    <form method="POST" action="" class="mt-3" id="con">
 
-<form method="POST" action="">
-    <!-- Campos para la tabla de inventario -->
-    <label for="nombre_material">Nombre del Material:</label>
-    <input type="text" name="nombre_material" id="nombre_material" required><br>
+        <div class="form-floating mb-3">
+            <input type="text" name="nombre_material" class="form-control" id="nombre_material" required placeholder=" ">
+            <label for="nombre_material">Nombre del Material</label>
+        </div>
 
-    <label for="cantidad_material">Cantidad de Material:</label>
-    <input type="number" name="cantidad" id="cantidad_material" required><br>
+        <div class="form-floating mb-3">
+            <input type="number" name="cantidad" id="cantidad_material" class="form-control" required placeholder=" ">
+            <label for="cantidad_material">Cantidad de Material</label>
+        </div>
 
-    <label for="tipo_movimiento">Tipo de Movimiento:</label>
-    <select name="tipo_movimiento" id="tipo_movimiento" onchange="mostrarOcultarFechaIngreso()" required>
-        <option value="Entrada">Entrada</option>
-        <option value="Salida">Salida</option>
-    </select><br>
+        <div class="form-floating mb-3">
+            <select name="tipo_movimiento" id="tipo_movimiento" class="form-select" onchange="mostrarOcultarFechaIngreso()" required>
+                <option value="Entrada">Entrada</option>
+                <option value="Salida">Salida</option>
+            </select>
+            <label for="tipo_movimiento">Tipo de Movimiento</label>
+        </div>
 
-    <!-- Campos para la tabla de movimientos -->
-    <!-- Estos campos se llenan automáticamente en función de los datos ingresados arriba -->
+        <div id="fecha_ingreso_div" class="form-floating mb-3">
+            <input type="date" name="fecha_ingreso" id="fecha_ingreso" class="form-control">
+            <label for="fecha_ingreso">Fecha de Ingreso</label>
+        </div>
 
-    <div id="fecha_ingreso_div">
-        <label for="fecha_ingreso">Fecha de Ingreso:</label>
-        <input type="date" name="fecha_ingreso" id="fecha_ingreso"><br>
-    </div>
+        <div id="fecha_movimiento_div" class="form-floating mb-3" style="display:none;">
+            <input type="date" name="fecha_movimiento" id="fecha_movimiento" class="form-control">
+            <label for="fecha_movimiento">Fecha de Movimiento</label>
+        </div>
 
-    <div id="fecha_movimiento_div" style="display:none;">
-        <label for="fecha_movimiento">Fecha de Movimiento:</label>
-        <input type="date" name="fecha_movimiento" id="fecha_movimiento"><br>
-    </div>
+        <div class="form-floating mb-3">
+            <input type="text" name="lugar_almacenamiento" id="lugar_almacenamiento" class="form-control" required>
+            <label for="lugar_almacenamiento">Lugar de Almacenamiento</label>
+        </div>
 
-    <label for="lugar_almacenamiento">Lugar de Almacenamiento:</label>
-    <input type="text" name="lugar_almacenamiento" id="lugar_almacenamiento" required><br>
-
-    <input type="submit" value="Registrar">
-</form>
-
-
-<div class="container">
-<h2>Tabla de Inventario</h2>
-
-<!-- Agregar un contenedor para la tabla -->
-<table id="tablaInventario">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre del Material</th>
-            <th>Cantidad</th>
-            <th>Fecha de Ingreso</th>
-            <th>Lugar de Almacenamiento</th>
-            <th style='text-align:center;'>Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        // Mostrar datos en la tabla
-        while ($row = mysqli_fetch_assoc($resultConsulta)) {
-            echo "<tr>";
-            echo "<td>{$row['id']}</td>";
-            echo "<td>{$row['nombre_material']}</td>";
-            echo "<td>{$row['cantidad']}</td>";
-            echo "<td>{$row['fecha_ingreso']}</td>";
-            echo "<td>{$row['lugar_almacenamiento']}</td>";
-            echo "<td style='text-align:center;'> 
-            <a href='editarBodega.php?id=".$row['id']."'><input type='submit' name='Submit' value='Editar'></a>
-            <input type='submit' name='Submit' value='Eliminar' onclick=\"eliminarBodega(".$row['id'].")\">
-          </td>";
-    
-            echo "</tr>";
-        }
-        ?>
-    </tbody>
-</table>
+        <input type="submit" value="Registrar" class="btn btn-success">
+    </form>
 </div>
-<script src="js/eliminar.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<?php
-require_once 'includes/inicio.php';
-?>
+
+    <div class="container mt-5">
+        <h2>Tabla de Inventario</h2>
+
+        <!-- Agregar un contenedor para la tabla -->
+        <table id="tablaInventario" class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre del Material</th>
+                    <th>Cantidad</th>
+                    <th>Fecha de Ingreso</th>
+                    <th>Lugar de Almacenamiento</th>
+                    <th style='text-align:center;'>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                // Mostrar datos en la tabla
+                while ($row = mysqli_fetch_assoc($resultConsulta)) {
+                    echo "<tr>";
+                    echo "<td>{$row['id']}</td>";
+                    echo "<td>{$row['nombre_material']}</td>";
+                    echo "<td>{$row['cantidad']}</td>";
+                    echo "<td>{$row['fecha_ingreso']}</td>";
+                    echo "<td>{$row['lugar_almacenamiento']}</td>";
+                    echo "<td style='text-align:center;'> 
+                        <a href='editarBodega.php?id=" . $row['id'] . "' class='btn btn-warning'>Editar</a>
+                        <button class='btn btn-danger' onclick=\"eliminarBodega(" . $row['id'] . ")\">Eliminar</button>
+                    </td>";
+
+                    echo "</tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- DataTables initialization -->
+    <script>
+        $(document).ready(function () {
+            $('#tablaInventario').DataTable();
+        });
+    </script>
+
+    <script src="js/eliminar.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <?php
+    require_once 'includes/inicio.php';
+    ?>
+</body>
+
+</html>

@@ -2,6 +2,7 @@
 
 require_once 'includes/conexion.php';
 
+
 $mensaje = "";
 $guardar = false; // Declarar la variable $guardar
 
@@ -25,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_store_result($stmt_existencia);
 
         if (mysqli_stmt_num_rows($stmt_existencia) > 0) {
-       
+
             $mensaje = "Documento o correo electrónico ya existen. No se puede registrar.";
 
         } else {
@@ -63,11 +64,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $mensaje = "Todos los campos son obligatorios. Por favor, completa todos los campos.";
     }
+
+
+}
+?>
+<?php
+$db = mysqli_connect("localhost", "root", "", "construccion");
+
+if (!$db) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+$sqlUsuarios = "SELECT u.id, u.documento, u.nombre, u.apellido, u.email, r.descripcion as descripcion
+                FROM usuarios u
+                INNER JOIN rol r ON u.id_rol = r.id";
+
+
+$resultUsuarios = $db->query($sqlUsuarios);
+
+if (!$resultUsuarios) {
+    die("Query failed: " . mysqli_error($db));
 }
 ?>
 
 <?php require_once 'includes/encabezado.php' ?>
-
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
 <!-- SweetAlert2 CSS desde CDN -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
 
@@ -108,7 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-floating mb-3">
-                <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
+                <input type="password" name="password" class="form-control" id="floatingPassword"
+                    placeholder="Password">
                 <label for="floatingPassword">Password:</label>
             </div>
 
@@ -130,6 +154,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </form>
 
+    <div class="container">
+    <table id="tablaInventario">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Documento</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Accion</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            while ($row = mysqli_fetch_assoc($resultUsuarios)) {
+                echo "<tr>";
+                echo "<td>{$row['id']}</td>";
+                echo "<td>{$row['documento']}</td>";
+                echo "<td>{$row['nombre']}</td>";
+                echo "<td>{$row['apellido']}</td>";
+                echo "<td>{$row['email']}</td>";
+                echo "<td>{$row['descripcion']}</td>"; 
+                echo "<td><input type='submit' name='Submit' value='Eliminar' class='btn btn-danger' onclick=\" eliminarUsuario(" . $row['id'] . ")\"></td>";
+                echo "</tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
+    <?php
+    mysqli_close($db);
+    ?>
+    <script>
+        // Inicializar DataTable
+        $(document).ready(function () {
+            $('#tablaInventario').DataTable();
+        });
+    </script>
+    <script src="js/eliminar.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <?php if (!empty($mensaje)): ?>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -138,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     icon: "<?php echo ($guardar) ? 'success' : 'error'; ?>",
                     title: "<?php echo $mensaje; ?>",
                     showConfirmButton: false,
-                    timer: 4000
+                    timer: 2000
                 });
 
                 <?php if (!$guardar): ?>

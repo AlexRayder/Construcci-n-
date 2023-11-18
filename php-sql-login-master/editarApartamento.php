@@ -89,8 +89,8 @@ require_once 'includes/conexion.php';
 
             <input type="hidden" name="id_apartamento" value="<?php echo $id; ?>">
             <div>
-                <input type="submit" name="enviar" value="Actualizar">
-                <a href="apartamentos.php">Regresar</a>
+                <input type="submit" class="btn btn-success" name="enviar" value="Actualizar">
+                <a href="apartamentos.php" class="btn btn-danger">Regresar</a>
             </div>
         </form>
     </div>
